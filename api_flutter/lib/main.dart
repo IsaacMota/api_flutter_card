@@ -1,10 +1,11 @@
+import 'package:api_flutter/tabela.dart';
 import 'package:flutter/material.dart';
+import 'home.dart';
 
 void main() {
   runApp(BlackjackApp());
 }
 
-// Classe principal do aplicativo, responsável por iniciar o jogo
 class BlackjackApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -13,35 +14,53 @@ class BlackjackApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BlackjackScreen(), // Define a tela inicial como BlackjackScreen
+      home: MainScreen(),
     );
   }
 }
 
-// Tela principal do jogo Blackjack
+class MainScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return HomePage(
+      onStartGame: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BlackjackScreen()),
+        );
+      },
+      onReadRules: () {
+        // Navegar para a página de leitura de regras, se desejar
+      },
+    );
+  }
+}
+
 class BlackjackScreen extends StatefulWidget {
   @override
   _BlackjackScreenState createState() => _BlackjackScreenState();
 }
 
 class _BlackjackScreenState extends State<BlackjackScreen> {
-  List<String> deck = []; // Baralho
-  List<String> maoJogador = []; // Mão do jogador
-  List<String> maoDealer = []; // Mão do dealer
-  int pontuacaoJogador = 0; // Pontuação do jogador
-  int pontuacaoDealer = 0; // Pontuação do dealer
-  bool fimDeJogo = false; // Flag indicando o fim do jogo
-  bool mostrarCartaDealer = true; // Flag para mostrar a carta do dealer
-  bool mostrarCartaJogador = false; // Flag para mostrar a carta do jogador
+  List<String> deck = [];
+  List<String> maoJogador = [];
+  List<String> maoGambit = [];
+  int pontuacaoJogador = 0;
+  int pontuacaoGambit = 0;
+  bool fimDeJogo = false;
+  bool mostrarCartaGambit = true;
+  bool mostrarCartaJogador = false;
+  bool mostrarPontuacaoJogador = false;
+  int vitoriasJogador = 0;
+  int vitoriasGambit = 0;
 
   @override
   void initState() {
     super.initState();
-    inicializarBaralho(); // Inicializa o baralho
-    iniciarJogo(); // Inicia o jogo
+    inicializarBaralho();
+    iniciarJogo();
   }
 
-  // Inicializa o baralho com todas as cartas e embaralha
   void inicializarBaralho() {
     deck = [];
     for (var naipe in ['Copas', 'Ouros', 'Paus', 'Espadas']) {
@@ -63,39 +82,36 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
         deck.add('$valor de $naipe');
       }
     }
-    deck.shuffle(); // Embaralha o baralho
+    deck.shuffle();
   }
 
-  // Inicia o jogo, distribuindo duas cartas para o jogador e duas para o dealer
   void iniciarJogo() {
     maoJogador = [];
-    maoDealer = [];
+    maoGambit = [];
     pontuacaoJogador = 0;
-    pontuacaoDealer = 0;
+    pontuacaoGambit = 0;
     fimDeJogo = false;
-    mostrarCartaDealer = true;
+    mostrarCartaGambit = true;
     mostrarCartaJogador = false;
+    mostrarPontuacaoJogador = false;
     for (var i = 0; i < 2; i++) {
-      maoJogador.add(deck.removeAt(0)); // Remove e adiciona carta ao jogador
-      maoDealer.add(deck.removeAt(0)); // Remove e adiciona carta ao dealer
+      maoJogador.add(deck.removeAt(0));
+      maoGambit.add(deck.removeAt(0));
     }
-    atualizarPontuacoes(); // Atualiza as pontuações após a distribuição inicial
+    atualizarPontuacoes();
   }
 
-  // Atualiza as pontuações do jogador e do dealer
   void atualizarPontuacoes() {
     pontuacaoJogador = calcularPontuacao(maoJogador);
-    pontuacaoDealer = calcularPontuacao(maoDealer);
-    // Verifica se algum jogador ultrapassou 21 pontos
-    if (pontuacaoJogador > 21 || pontuacaoDealer > 21) {
+    pontuacaoGambit = calcularPontuacao(maoGambit);
+    if (pontuacaoJogador > 21 || pontuacaoGambit > 21) {
       setState(() {
         fimDeJogo = true;
-        mostrarCartaDealer = true; // Mostra a carta do dealer
+        mostrarCartaGambit = true;
       });
     }
   }
 
-  // Calcula a pontuação de uma mão de cartas
   int calcularPontuacao(List<String> mao) {
     var pontuacao = 0;
     var ases = 0;
@@ -110,7 +126,6 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
         pontuacao += int.parse(valor);
       }
     }
-    // Trata o valor dos Ases para evitar estouro da pontuação
     while (pontuacao > 21 && ases > 0) {
       pontuacao -= 10;
       ases -= 1;
@@ -118,44 +133,48 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     return pontuacao;
   }
 
-  // Função para o jogador pedir uma nova carta
   void pedirCarta() {
     setState(() {
-      mostrarCartaJogador = true; // Revela a carta do jogador
-      maoJogador.add(deck.removeAt(0)); // Adiciona uma carta ao jogador
-      atualizarPontuacoes(); // Atualiza as pontuações
+      mostrarCartaJogador = true;
+      mostrarPontuacaoJogador = true;
+      maoJogador.add(deck.removeAt(0));
+      atualizarPontuacoes();
     });
   }
 
-  // Função para o jogador parar de pedir cartas
   void parar() {
     setState(() {
-      mostrarCartaDealer = true; // Mostra a carta do dealer
+      mostrarCartaGambit = true;
     });
-    // Dealer pede cartas até atingir pelo menos 17 pontos
-    while (pontuacaoDealer < 17) {
-      maoDealer.add(deck.removeAt(0)); // Adiciona uma carta ao dealer
-      atualizarPontuacoes(); // Atualiza as pontuações
+    while (pontuacaoGambit < 17) {
+      maoGambit.add(deck.removeAt(0));
+      atualizarPontuacoes();
     }
     setState(() {
-      fimDeJogo = true; // Marca o fim do jogo
+      fimDeJogo = true;
+      if ((pontuacaoJogador <= 21 && pontuacaoJogador > pontuacaoGambit) ||
+          pontuacaoGambit > 21) {
+        vitoriasJogador++;
+      } else if ((pontuacaoGambit <= 21 &&
+              pontuacaoGambit > pontuacaoJogador) ||
+          pontuacaoJogador > 21) {
+        vitoriasGambit++;
+      }
     });
   }
 
-  // Reinicia o jogo
   void novoJogo() {
     setState(() {
-      iniciarJogo(); // Reinicia o jogo
+      iniciarJogo();
     });
   }
 
-  // Função para calcular o resultado da partida
   String getResultadoPartida() {
     if (pontuacaoJogador > 21 ||
-        (pontuacaoDealer <= 21 && pontuacaoDealer > pontuacaoJogador)) {
-      return 'DEALER VENCEU! :(';
-    } else if (pontuacaoDealer > 21 ||
-        (pontuacaoJogador <= 21 && pontuacaoJogador > pontuacaoDealer)) {
+        (pontuacaoGambit <= 21 && pontuacaoGambit > pontuacaoJogador)) {
+      return 'GAMBIT VENCEU! :(';
+    } else if (pontuacaoGambit > 21 ||
+        (pontuacaoJogador <= 21 && pontuacaoJogador > pontuacaoGambit)) {
       return 'VOCÊ VENCEU! :)';
     } else {
       return 'EMPATE';
@@ -168,42 +187,39 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
       appBar: AppBar(
         title: Text('Blackjack'),
       ),
-      backgroundColor: Colors.green[900],
+      backgroundColor: Color.fromARGB(255, 45, 6, 63),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // Título da mão do dealer
-            Text('MÃO DO DEALER:', style: TextStyle(color: Colors.white)),
+            Text('MÃO DO GAMBIT:',
+                style: TextStyle(color: Color.fromARGB(255, 178, 111, 255))),
             SizedBox(height: 10),
-// Cartas do dealer
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Lógica para mostrar a carta ou o verso
-                if (!mostrarCartaDealer)
+                if (!mostrarCartaGambit)
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        mostrarCartaDealer = true;
+                        mostrarCartaGambit = true;
                       });
                     },
                     child: CardWidget(carta: 'Verso'),
                   )
                 else
-                  for (var carta in maoDealer) ...[
+                  for (var carta in maoGambit) ...[
                     CardWidget(carta: carta),
                     SizedBox(width: 5),
                   ],
               ],
             ),
             SizedBox(height: 10),
-// Pontuação do dealer abaixo das cartas do dealer
             Text(
-                'PONTUAÇÃO DO DEALER: ${mostrarCartaDealer ? pontuacaoDealer : '?'}',
-                style: TextStyle(color: Colors.white)),
+              'PONTUAÇÃO DO GAMBIT: ${mostrarCartaGambit ? pontuacaoGambit : '?'}',
+              style: TextStyle(color: const Color.fromARGB(255, 178, 111, 255)),
+            ),
             SizedBox(height: 40),
-            // Mensagem de fim de jogo
             if (fimDeJogo)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -219,32 +235,26 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                   ),
                 ),
               ),
-
-            SizedBox(height: 40), // Adiciona um pequeno espaçamento vertical
-
-// Mão do jogador
+            SizedBox(height: 40),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Pontuação do jogador acima das cartas
                 Padding(
-                  padding: EdgeInsets.only(
-                      bottom: 10), // Adiciona espaço apenas na parte inferior
+                  padding: EdgeInsets.only(bottom: 10),
                   child: Text(
-                    'SUA PONTUAÇÃO: ${mostrarCartaDealer ? pontuacaoJogador : '?'}',
-                    style: TextStyle(color: Colors.white),
+                    'SUA PONTUAÇÃO: ${mostrarPontuacaoJogador ? pontuacaoJogador : '?'}',
+                    style: TextStyle(color: Color.fromARGB(255, 144, 255, 246)),
                   ),
                 ),
-                // Cartas do jogador
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Lógica para mostrar a carta ou o verso
                     if (!mostrarCartaJogador)
                       GestureDetector(
                         onTap: () {
                           setState(() {
                             mostrarCartaJogador = true;
+                            mostrarPontuacaoJogador = true;
                           });
                         },
                         child: CardWidget(carta: 'Verso'),
@@ -257,44 +267,76 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                   ],
                 ),
                 SizedBox(
-                  height:
-                      10, // Adiciona um espaço entre as cartas e o texto "Mão do jogador"
+                  height: 10,
                 ),
-                // Texto "Mão do jogador"
                 Text(
-                  'MÃO DO JOGADOR:',
-                  style: TextStyle(color: Colors.white),
+                  'SUA MÃO:',
+                  style: TextStyle(
+                      color: const Color.fromARGB(255, 144, 255, 246)),
                 ),
               ],
             ),
-
             SizedBox(height: 20),
-
-            // Botões de ação
             if (!fimDeJogo)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  ElevatedButton(
-                    onPressed: pedirCarta,
-                    child: Text('Pedir'),
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      ElevatedButton(
+                        onPressed: pedirCarta,
+                        child: Text('Pedir'),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 97, 196, 72)),
+                      ),
+                      SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: parar,
+                        child: Text('Parar'),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 153, 43, 35)),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 20),
+                  SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: parar,
-                    child: Text('Parar'),
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TabelaPage(
+                            nomes: [
+                              "Jogador"
+                            ], // Substitua "Jogador" pelo nome do jogador
+                            vitorias: [
+                              vitoriasJogador
+                            ], // Passa o número de vitórias do jogador
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text('Acabar Jogo'),
                   ),
                 ],
               ),
-            // Botão para novo jogo após o fim da partida
             if (fimDeJogo)
               Column(
                 children: [
                   ElevatedButton(
                     onPressed: novoJogo,
                     child: Text('Novo Jogo'),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Suas Vitórias: $vitoriasJogador',
+                    style: TextStyle(
+                        color: const Color.fromARGB(255, 144, 255, 246)),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Vitórias do Gambit: $vitoriasGambit',
+                    style: TextStyle(
+                        color: const Color.fromARGB(255, 178, 111, 255)),
                   ),
                 ],
               ),
@@ -305,7 +347,6 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
   }
 }
 
-// Widget para exibir uma carta
 class CardWidget extends StatelessWidget {
   final String carta;
 
