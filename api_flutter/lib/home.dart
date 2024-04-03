@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'introducao.dart'; // Importe o arquivo introducao.dart
 
+// Classe responsável por construir a página inicial do aplicativo
 class HomePage extends StatelessWidget {
-  final Function() onStartGame;
-  final Function() onReadRules;
+  final Function() onStartGame; // Função chamada ao iniciar o jogo
+  final Function() onReadRules; // Função chamada ao ler as regras
 
+  // Construtor da classe HomePage, recebendo duas funções como parâmetros obrigatórios
   const HomePage({
     required this.onStartGame,
     required this.onReadRules,
@@ -14,28 +16,39 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Scaffold é um layout básico de uma página
       appBar: AppBar(
-        title: Text('Blackjack'),
+        // Barra de aplicativo
+        title: Text('Blackjack'), // Título da barra de aplicativo
       ),
-      backgroundColor: Color.fromARGB(255, 45, 6, 63),
+      backgroundColor: Color.fromARGB(255, 45, 6, 63), // Cor de fundo da página
       body: Center(
+        // Conteúdo centralizado na página
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          // Widget de coluna para organizar os elementos verticalmente
+          mainAxisAlignment: MainAxisAlignment
+              .center, // Alinhamento principal no centro vertical
           children: [
+            // Lista de widgets filhos da coluna
             ElevatedButton(
-              onPressed: onStartGame,
-              child: Text('Iniciar Jogo'),
+              // Botão elevado (com estilo) para iniciar o jogo
+              onPressed:
+                  onStartGame, // Função a ser chamada ao pressionar o botão
+              child: Text('Iniciar Jogo'), // Texto exibido no botão
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20), // Espaçamento vertical entre os botões
             ElevatedButton(
+              // Botão elevado para ler as regras
               onPressed: () {
-                // Navegar para a página de introdução ao jogo
+                // Função anônima para navegar para a página de instruções ao pressionar o botão
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => InstrucaoPage()),
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          InstrucaoPage()), // Navegação para a página de instruções
                 );
               },
-              child: Text('Ler Regras'),
+              child: Text('Ler Regras'), // Texto exibido no botão
             ),
           ],
         ),

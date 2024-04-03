@@ -1,11 +1,12 @@
-import 'package:api_flutter/tabela.dart';
+import 'package:api_flutter/home.dart';
 import 'package:flutter/material.dart';
-import 'home.dart';
+import 'tabela.dart';
 
 void main() {
   runApp(BlackjackApp());
 }
 
+// Classe principal da aplicação
 class BlackjackApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -14,11 +15,12 @@ class BlackjackApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MainScreen(),
+      home: MainScreen(), // Define a tela inicial como MainScreen
     );
   }
 }
 
+// Tela principal
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,9 @@ class MainScreen extends StatelessWidget {
       onStartGame: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => BlackjackScreen()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  BlackjackScreen()), // Navega para a tela do jogo quando o jogo é iniciado
         );
       },
       onReadRules: () {
@@ -36,12 +40,14 @@ class MainScreen extends StatelessWidget {
   }
 }
 
+// Tela do jogo de Blackjack
 class BlackjackScreen extends StatefulWidget {
   @override
   _BlackjackScreenState createState() => _BlackjackScreenState();
 }
 
 class _BlackjackScreenState extends State<BlackjackScreen> {
+  // Declaração de variáveis e estados do jogo
   List<String> deck = [];
   List<String> maoJogador = [];
   List<String> maoGambit = [];
@@ -57,10 +63,11 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
   @override
   void initState() {
     super.initState();
-    inicializarBaralho();
-    iniciarJogo();
+    inicializarBaralho(); // Inicializa o baralho
+    iniciarJogo(); // Inicia o jogo
   }
 
+  // Função para inicializar o baralho
   void inicializarBaralho() {
     deck = [];
     for (var naipe in ['Copas', 'Ouros', 'Paus', 'Espadas']) {
@@ -85,6 +92,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     deck.shuffle();
   }
 
+  // Função para iniciar o jogo
   void iniciarJogo() {
     maoJogador = [];
     maoGambit = [];
@@ -101,17 +109,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     atualizarPontuacoes();
   }
 
-  void atualizarPontuacoes() {
-    pontuacaoJogador = calcularPontuacao(maoJogador);
-    pontuacaoGambit = calcularPontuacao(maoGambit);
-    if (pontuacaoJogador > 21 || pontuacaoGambit > 21) {
-      setState(() {
-        fimDeJogo = true;
-        mostrarCartaGambit = true;
-      });
-    }
-  }
-
+  // Função para calcular a pontuação
   int calcularPontuacao(List<String> mao) {
     var pontuacao = 0;
     var ases = 0;
@@ -133,6 +131,19 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     return pontuacao;
   }
 
+  // Função para atualizar as pontuações
+  void atualizarPontuacoes() {
+    pontuacaoJogador = calcularPontuacao(maoJogador);
+    pontuacaoGambit = calcularPontuacao(maoGambit);
+    if (pontuacaoJogador > 21 || pontuacaoGambit > 21) {
+      setState(() {
+        fimDeJogo = true;
+        mostrarCartaGambit = true;
+      });
+    }
+  }
+
+  // Função para pedir uma carta
   void pedirCarta() {
     setState(() {
       mostrarCartaJogador = true;
@@ -142,6 +153,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     });
   }
 
+  // Função para parar o jogo
   void parar() {
     setState(() {
       mostrarCartaGambit = true;
@@ -163,12 +175,14 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     });
   }
 
+  // Função para iniciar um novo jogo
   void novoJogo() {
     setState(() {
       iniciarJogo();
     });
   }
 
+  // Função para obter o resultado da partida
   String getResultadoPartida() {
     if (pontuacaoJogador > 21 ||
         (pontuacaoGambit <= 21 && pontuacaoGambit > pontuacaoJogador)) {
@@ -181,9 +195,94 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
     }
   }
 
+  // Função para mostrar o diálogo do nickname
+  void mostrarDialogoNickname(BuildContext context) {
+    TextEditingController _controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8,
+            padding: EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(
+                  255, 33, 33, 33), // Cor de fundo estilo fliperama
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Insira um Nickname',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20.0),
+                TextField(
+                  controller: _controller,
+                  maxLength: 3,
+                  style: TextStyle(color: Colors.white, fontSize: 16.0),
+                  textAlign: TextAlign.center,
+                  decoration: InputDecoration(
+                    counterText: '', // Remove o contador de caracteres
+                    hintText: 'AAA', // Exemplo de 3 caracteres
+                    hintStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.0),
+                ElevatedButton(
+                  onPressed: () {
+                    // Obtém o nickname inserido
+                    String nickname = _controller.text;
+                    // Passa para a página da tabela junto com os dados do jogador e do Gambit
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TabelaPage(
+                          nickname: nickname,
+                          vitoriasJogador: vitoriasJogador,
+                          vitoriasGambit: vitoriasGambit,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Confirmar',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 178, 111, 255),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 40.0, vertical: 16.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Estrutura da tela do jogo
       appBar: AppBar(
         title: Text('Blackjack'),
       ),
@@ -286,34 +385,21 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
                       ElevatedButton(
                         onPressed: pedirCarta,
                         child: Text('Pedir'),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 97, 196, 72)),
                       ),
                       SizedBox(width: 20),
                       ElevatedButton(
                         onPressed: parar,
                         child: Text('Parar'),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 153, 43, 35)),
+                            backgroundColor:
+                                const Color.fromARGB(255, 177, 47, 38)),
                       ),
                     ],
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TabelaPage(
-                            nomes: [
-                              "Jogador"
-                            ], // Substitua "Jogador" pelo nome do jogador
-                            vitorias: [
-                              vitoriasJogador
-                            ], // Passa o número de vitórias do jogador
-                          ),
-                        ),
-                      );
+                      mostrarDialogoNickname(context);
                     },
                     child: Text('Acabar Jogo'),
                   ),
@@ -347,6 +433,7 @@ class _BlackjackScreenState extends State<BlackjackScreen> {
   }
 }
 
+// Widget para exibir as cartas
 class CardWidget extends StatelessWidget {
   final String carta;
 
